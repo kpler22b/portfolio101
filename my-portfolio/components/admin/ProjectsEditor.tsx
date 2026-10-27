@@ -19,6 +19,7 @@ export default function ProjectsEditor({ projects, setProjects, showToast, isDar
     const [newProjLiveUrl, setNewProjLiveUrl] = useState('');
     const [newProjGithubUrl, setNewProjGithubUrl] = useState('');
     const [newProjProblem, setNewProjProblem] = useState('');
+    const [newProjSolutions, setNewProjSolutions] = useState('');
     const [newProjImpact, setNewProjImpact] = useState('');
 
     const handleAddProject = (e: React.FormEvent) => {
@@ -35,6 +36,7 @@ export default function ProjectsEditor({ projects, setProjects, showToast, isDar
             githubUrl: newProjGithubUrl,
             featured: true,
             problemStatement: newProjProblem,
+            solutionHighlights: newProjSolutions.split(',').map(s => s.trim()).filter(Boolean),
             measuredImpact: newProjImpact
         };
 
@@ -48,6 +50,7 @@ export default function ProjectsEditor({ projects, setProjects, showToast, isDar
         setNewProjLiveUrl('');
         setNewProjGithubUrl('');
         setNewProjProblem('');
+        setNewProjSolutions('');
         setNewProjImpact('');
         showToast("Project case study added to portfolio!");
     };
@@ -76,6 +79,7 @@ export default function ProjectsEditor({ projects, setProjects, showToast, isDar
                 <input type="text" placeholder="GitHub Repository URL" value={newProjGithubUrl} onChange={(e) => setNewProjGithubUrl(e.target.value)} className={`w-full px-4 py-2 rounded-xl border text-sm outline-none ${isDarkMode ? 'bg-black border-[#222222] text-white' : 'bg-white border-gray-300 text-black'}`} />
                 <textarea rows={2} placeholder="Project Overview / Summary" value={newProjSummary} onChange={(e) => setNewProjSummary(e.target.value)} className={`w-full px-4 py-2 rounded-xl border text-sm outline-none ${isDarkMode ? 'bg-black border-[#222222] text-white' : 'bg-white border-gray-300 text-black'}`} />
                 <textarea rows={2} placeholder="Problem Statement" value={newProjProblem} onChange={(e) => setNewProjProblem(e.target.value)} className={`w-full px-4 py-2 rounded-xl border text-sm outline-none ${isDarkMode ? 'bg-black border-[#222222] text-white' : 'bg-white border-gray-300 text-black'}`} />
+                <textarea rows={2} placeholder="Solution Highlights (comma separated items)" value={newProjSolutions} onChange={(e) => setNewProjSolutions(e.target.value)} className={`w-full px-4 py-2 rounded-xl border text-sm outline-none ${isDarkMode ? 'bg-black border-[#222222] text-white' : 'bg-white border-gray-300 text-black'}`} />
                 <input type="text" placeholder="Measured Impact (e.g. Reduced load times by 40%)" value={newProjImpact} onChange={(e) => setNewProjImpact(e.target.value)} className={`w-full px-4 py-2 rounded-xl border text-sm outline-none ${isDarkMode ? 'bg-black border-[#222222] text-white' : 'bg-white border-gray-300 text-black'}`} />
 
                 <button type="submit" className="px-6 py-2.5 rounded-xl bg-[#59B292] text-black font-bold text-xs flex items-center gap-2 hover:opacity-90 transition">

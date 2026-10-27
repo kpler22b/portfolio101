@@ -3,13 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ExtendedProject, Skill, CVData, Testimonial } from '@/types';
-import { CheckCircle, Menu, X } from 'lucide-react';
+import { CheckCircle, Menu, X, Sun, Moon } from 'lucide-react';
 import PublicSidebar from '@/components/public/PublicSidebar';
 import HeroSection from '@/components/public/HeroSection';
 import ProjectsSection from '@/components/public/ProjectsSection';
 import SkillsSection from '@/components/public/SkillsSection';
 import CVSection from '@/components/public/CVSection';
 import TestimonialsSection from '@/components/public/TestimonialsSection';
+import ContactSection from '@/components/public/ContactSection';
 
 const INITIAL_PROJECTS: ExtendedProject[] = [
   {
@@ -92,16 +93,13 @@ const INITIAL_CV: CVData = {
 export default function PublicPortfolio() {
   const router = useRouter();
   const [mounted, setMounted] = useState<boolean>(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('about');
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
   const [toast, setToast] = useState<string | null>(null);
 
   const [projects, setProjects] = useState<ExtendedProject[]>(INITIAL_PROJECTS);
   const [skills, setSkills] = useState<Skill[]>(INITIAL_SKILLS);
   const [cvData, setCvData] = useState<CVData>(INITIAL_CV);
-  const [expandedProjectId, setExpandedProjectId] = useState<string | null>("p1");
 
   const [testimonials, setTestimonials] = useState<Testimonial[]>([
     { id: "t1", name: "Sarah Jenkins", role: "Product Lead at TechCorp", message: "Alex delivered clean, well-structured React code ahead of schedule. Great attention to detail, performance, and UI fidelity.", rating: 5, date: "2026-05-15" }
@@ -111,6 +109,40 @@ export default function PublicPortfolio() {
   const [newMessage, setNewMessage] = useState('');
   const [newRating, setNewRating] = useState<number>(5);
   const [hoverRating, setHoverRating] = useState<number>(0);
+
+  // Persistent Dark/Light Mode State
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('portfolio_theme');
+      if (savedTheme !== null) {
+        return JSON.parse(savedTheme);
+      }
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('portfolio_theme', JSON.stringify(isDarkMode));
+    }
+  }, [isDarkMode]);
+
+  // Persistent Sidebar Collapsed State
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sidebar_collapsed');
+      if (saved !== null) {
+        return JSON.parse(saved);
+      }
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sidebar_collapsed', JSON.stringify(sidebarCollapsed));
+    }
+  }, [sidebarCollapsed]);
 
   useEffect(() => {
     setMounted(true);
@@ -160,7 +192,7 @@ export default function PublicPortfolio() {
     if (!newName.trim() || !newMessage.trim()) return;
     const now = new Date();
     const formattedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-    
+
     const newEntry: Testimonial = {
       id: "t_" + Date.now(),
       name: newName,
@@ -182,7 +214,7 @@ export default function PublicPortfolio() {
   if (!mounted) return null;
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
+    <div className={`flex min-h-screen transition-colors duration-400 ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
       {toast && (
         <div className="fixed top-5 right-5 z-50 bg-[#59B292] text-black font-semibold px-4 py-2.5 rounded-lg shadow-xl flex items-center gap-2 text-sm max-w-[90vw]">
           <CheckCircle className="w-5 h-5 shrink-0" />
@@ -192,14 +224,33 @@ export default function PublicPortfolio() {
 
       {/* MOBILE TOP BAR */}
       <header className={`lg:hidden fixed top-0 left-0 right-0 z-50 border-b backdrop-blur-md flex items-center justify-between px-4 py-3 ${isDarkMode ? 'bg-black/80 border-[#222222]' : 'bg-white/80 border-gray-200'}`}>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-[#59B292]"></div>
-          <span className="font-bold tracking-wider text-sm uppercase">Portfolio</span>
+        <div className="flex items-center gap-3 group cursor-pointer select-none">
+          <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-200 dark:border-[#333333] shadow-xs">
+            <img
+              src="/path-to-your-image.jpg"
+              alt="Profile"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#59B292] border-2 border-white dark:border-[#121212]" />
+          </div>
+
+          <div className="flex flex-col">
+            <span className="font-bold text-xs tracking-tight">Dominic Saga</span>
+            <span className="text-[10px] text-gray-500 dark:text-gray-400">Website Developer</span>
+          </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
-          <button onClick={() => setIsDarkMode(!isDarkMode)} className={`p-2 rounded-lg transition ${isDarkMode ? 'bg-[#222222] text-yellow-400' : 'bg-gray-200 text-gray-800'}`}>
-            {isDarkMode ? '🌙' : '☀️'}
+          <button
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            className={`p-2.5 rounded-xl border transition flex items-center justify-center ${isDarkMode
+              ? 'border-[#222222] text-yellow-400 hover:bg-white/5'
+              : 'border-gray-200 text-gray-700 hover:bg-gray-100'
+              }`}
+            title="Toggle Theme"
+          >
+            {isDarkMode ? <Sun className="w-4 h-4 stroke-[1.5]" /> : <Moon className="w-4 h-4 stroke-[1.5]" />}
           </button>
           <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className={`p-2 rounded-lg transition ${isDarkMode ? 'bg-[#222222] text-white' : 'bg-gray-200 text-black'}`}>
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -215,11 +266,11 @@ export default function PublicPortfolio() {
           <a href="#skills" onClick={() => setMobileMenuOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Tech Stack</a>
           <a href="#cv" onClick={() => setMobileMenuOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>CV Inspector</a>
           <a href="#testimonials" onClick={() => setMobileMenuOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Testimonials</a>
+          <a href="#contact" onClick={() => setMobileMenuOpen(false)} className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>Contact</a>
         </div>
       )}
 
-      {/* DESKTOP SIDEBAR COMPONENT */}
-      <PublicSidebar 
+      <PublicSidebar
         sidebarCollapsed={sidebarCollapsed}
         setSidebarCollapsed={setSidebarCollapsed}
         activeTab={activeTab}
@@ -228,34 +279,31 @@ export default function PublicPortfolio() {
         setIsDarkMode={setIsDarkMode}
       />
 
-      {/* MAIN CONTENT AREA */}
-      <main className={`transition-all duration-300 p-4 sm:p-8 pt-20 lg:pt-8 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
+      <main className={`flex-1 transition-all duration-300 p-4 sm:p-8 pt-20 lg:pt-8 lg:ml-64`}>
         <div className="max-w-5xl mx-auto space-y-16 sm:space-y-20">
-          
-          <HeroSection 
+
+          <HeroSection
             cvData={cvData}
             copyEmailToClipboard={copyEmailToClipboard}
             isDarkMode={isDarkMode}
           />
 
-          <ProjectsSection 
+          <ProjectsSection
             projects={projects}
-            expandedProjectId={expandedProjectId}
-            setExpandedProjectId={setExpandedProjectId}
             isDarkMode={isDarkMode}
           />
 
-          <SkillsSection 
+          <SkillsSection
             skills={skills}
             isDarkMode={isDarkMode}
           />
 
-          <CVSection 
+          <CVSection
             cvData={cvData}
             isDarkMode={isDarkMode}
           />
 
-          <TestimonialsSection 
+          <TestimonialsSection
             testimonials={testimonials}
             newName={newName}
             setNewName={setNewName}
@@ -269,6 +317,11 @@ export default function PublicPortfolio() {
             setHoverRating={setHoverRating}
             handleAddTestimonial={handleAddTestimonial}
             isDarkMode={isDarkMode}
+          />
+
+          <ContactSection
+            isDarkMode={isDarkMode}
+            showToast={showToast}
           />
 
           <footer className={`py-8 border-t text-center text-xs ${isDarkMode ? 'border-[#222222] text-gray-500' : 'border-gray-200 text-gray-500'}`}>
