@@ -279,7 +279,8 @@ export default function PublicPortfolio() {
         setIsDarkMode={setIsDarkMode}
       />
 
-      <main className={`flex-1 transition-all duration-300 p-4 sm:p-8 pt-20 lg:pt-8 lg:ml-64`}>
+      {/* Dito inayos ang margin para sumabay kung nakakonek o naka-collapse ang sidebar */}
+      <main className={`flex-1 transition-all duration-300 p-4 sm:p-8 pt-20 lg:pt-8 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         <div className="max-w-5xl mx-auto space-y-16 sm:space-y-20">
 
           <HeroSection

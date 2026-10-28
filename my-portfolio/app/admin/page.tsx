@@ -146,14 +146,12 @@ export default function AdminStudio() {
       {/* MOBILE TOP BAR */}
       <header className={`lg:hidden fixed top-0 left-0 right-0 z-50 border-b backdrop-blur-md flex items-center justify-between px-4 py-3 ${isDarkMode ? 'bg-black/80 border-[#222222]' : 'bg-white/80 border-gray-200'}`}>
         <div className="flex items-center gap-3 group cursor-pointer select-none">
-          {/* Profile Picture Container na may border at subtle shadow */}
           <div className="relative w-9 h-9 rounded-full overflow-hidden border border-gray-200 dark:border-[#333333] shadow-xs">
             <img
-              src="/path-to-your-image.jpg" // Palitan mo ng actual path o URL ng picture mo
+              src="/path-to-your-image.jpg"
               alt="Profile"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
-            {/* Active status dot sa ilalim ng larawan */}
             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#59B292] border-2 border-white dark:border-[#121212]" />
           </div>
 
@@ -202,7 +200,8 @@ export default function AdminStudio() {
         onLogout={handleLogout}
       />
 
-      <main className="flex-1 overflow-y-auto p-4 sm:p-8 pt-20 lg:pt-8 lg:ml-64">
+      {/* Dito inayos ang margin para sumabay sa collapse state at nananatili sa gitna ang content */}
+      <main className={`flex-1 overflow-y-auto p-4 sm:p-8 pt-20 lg:pt-8 transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
         <div className="max-w-4xl mx-auto space-y-12">
 
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 border-b pb-4 border-[#222222]/30">

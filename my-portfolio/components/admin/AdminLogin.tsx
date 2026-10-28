@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Lock, ArrowLeft, Sun, Moon, ShieldCheck } from 'lucide-react';
+import { Sun, Moon, ArrowLeft, Eye, EyeOff, ShieldCheck, Terminal, Command, Mail, Lock } from 'lucide-react';
 
 interface AdminLoginProps {
   pinInput: string;
@@ -22,90 +22,188 @@ export default function AdminLogin({
   setIsDarkMode,
 }: AdminLoginProps) {
   const router = useRouter();
+  const [emailInput, setEmailInput] = useState('admin@nik.dev');
+  const [showPin, setShowPin] = useState(false);
 
   return (
-    <div className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-300 relative ${isDarkMode ? 'bg-[#0a0a0a] text-white' : 'bg-gray-100 text-black'}`}>
+    <div className={`min-h-screen grid grid-cols-1 lg:grid-cols-12 select-none transition-colors duration-300 font-sans ${
+      isDarkMode ? 'bg-[#09090b] text-neutral-100' : 'bg-[#fafafa] text-neutral-900'
+    }`}>
       
-      {/* TOP RIGHT THEME TOGGLE BUTTON */}
-      <div className="absolute top-6 right-6">
-        <button
-          onClick={() => setIsDarkMode(!isDarkMode)}
-          className={`p-2.5 rounded-xl border transition-all duration-200 flex items-center gap-2 text-xs font-semibold shadow-sm ${
-            isDarkMode 
-              ? 'bg-[#171717] border-[#262626] text-yellow-400 hover:bg-[#222]' 
-              : 'bg-white border-gray-300 text-gray-800 hover:bg-gray-50'
-          }`}
-          title="Toggle Theme"
-        >
-          {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          <span className="hidden sm:inline">{isDarkMode ? 'Light Mode' : 'Dark Mode'}</span>
-        </button>
+      {/* 1. LEFT BRANDING / CONSOLE PANEL (Desktop Only) */}
+      <div className={`hidden lg:flex lg:col-span-5 flex-col justify-between p-12 relative overflow-hidden border-r ${
+        isDarkMode 
+          ? 'bg-[#0d0d11] border-neutral-800/80' 
+          : 'bg-white border-neutral-200/80'
+      }`}>
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
+
+        {/* Top Branding */}
+        <div className="flex items-center gap-2.5 relative z-10">
+          <div className="p-2 rounded-xl bg-[#59B292]/10 border border-[#59B292]/20 text-[#59B292]">
+            <Terminal className="w-4 h-4" />
+          </div>
+          <span className="font-mono text-xs font-bold tracking-widest uppercase">
+            nik<span className="text-[#59B292]">.dev</span>
+          </span>
+        </div>
+
+        {/* Center Content Showcase */}
+        <div className="relative z-10 space-y-4 my-auto">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-mono font-medium border bg-[#59B292]/10 border-[#59B292]/20 text-[#59B292]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#59B292]" />
+            Restricted Admin Studio
+          </div>
+          <h2 className="text-3xl font-extrabold tracking-tight leading-tight">
+            Elevated Access <br />& Control Studio.
+          </h2>
+          <p className={`text-xs font-mono leading-relaxed max-w-sm ${isDarkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>
+            // Authenticate session to configure live portfolio assets, project repositories, and system variables.
+          </p>
+        </div>
+
+        {/* Bottom Status Indicator */}
+        <div className="relative z-10 flex items-center justify-between text-[11px] font-mono text-neutral-500">
+          <span>auth_gate_v2.0</span>
+          <span className="flex items-center gap-1.5">
+            <Command className="w-3 h-3 text-[#59B292]" />
+            session_encrypted
+          </span>
+        </div>
       </div>
 
-      {/* LOGIN CARD CONTAINER */}
-      <div className={`w-full max-w-md p-8 sm:p-10 rounded-3xl border shadow-2xl space-y-6 relative overflow-hidden transition-all duration-300 ${
-        isDarkMode 
-          ? 'bg-[#121212]/90 border-[#222222] shadow-black/50 backdrop-blur-xl' 
-          : 'bg-white border-gray-200 shadow-gray-200/50'
-      }`}>
+      {/* 2. RIGHT LOGIN FORM PANEL */}
+      <div className="lg:col-span-7 flex flex-col justify-between p-6 sm:p-12 relative">
         
-        {/* DECORATIVE AMBIENT GLOW */}
-        <div className="absolute -top-24 -left-24 w-48 h-48 bg-[#59B292]/10 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div className="flex flex-col items-center space-y-3 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-[#59B292]/10 border border-[#59B292]/30 flex items-center justify-center text-[#59B292] shadow-inner">
-            <Lock className="w-6 h-6" />
+        {/* Top Actions Bar */}
+        <div className="flex items-center justify-between w-full max-w-md mx-auto lg:max-w-none">
+          {/* Mobile Only Brand Label */}
+          <div className="lg:hidden flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-[#59B292]" />
+            <span className="font-mono text-xs font-bold tracking-wider uppercase">
+              nik.dev
+            </span>
           </div>
-          <div>
-            <h1 className="text-2xl font-extrabold tracking-tight">Admin Studio</h1>
-            <p className={`text-xs mt-1 font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-              Secure Enterprise Portfolio Gateway (Default PIN: 1234)
-            </p>
+
+          <div className="ml-auto">
+            <button
+              type="button"
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className={`p-2.5 rounded-xl border transition-all duration-150 outline-none ${
+                isDarkMode 
+                  ? 'border-neutral-800 bg-neutral-900 text-neutral-400 hover:text-white' 
+                  : 'border-neutral-200 bg-white text-neutral-600 hover:text-black shadow-sm'
+              }`}
+              title="Toggle Theme"
+            >
+              {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
+            </button>
           </div>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        {/* Main Form Center */}
+        <div className="w-full max-w-sm mx-auto my-auto py-10 space-y-6">
           <div className="space-y-1.5 text-left">
-            <label className={`text-xs font-semibold block ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-              Security Access PIN
-            </label>
-            <div className="relative">
-              <input 
-                type="password"
-                placeholder="••••"
-                maxLength={10}
-                value={pinInput}
-                onChange={(e) => setPinInput(e.target.value)}
-                className={`w-full px-4 py-3.5 rounded-xl border text-center text-xl tracking-[0.3em] font-mono outline-none transition-all duration-200 focus:border-[#59B292] focus:ring-2 focus:ring-[#59B292]/20 ${
-                  pinError 
-                    ? 'border-red-500 bg-red-500/5' 
-                    : isDarkMode 
-                      ? 'bg-black/60 border-[#262626] text-white placeholder-gray-600' 
-                      : 'bg-gray-50 border-gray-300 text-black placeholder-gray-400'
-                }`}
-              />
-            </div>
-            {pinError && (
-              <p className="text-xs text-red-500 font-semibold text-center pt-1">
-                Invalid PIN code. Try '1234'.
-              </p>
-            )}
+            <h1 className="text-2xl font-bold tracking-tight">
+              Admin Access
+            </h1>
+            <p className={`text-xs ${isDarkMode ? 'text-neutral-400' : 'text-neutral-500'}`}>
+              Enter administrator email and passkey to manage portfolio data.
+            </p>
           </div>
 
-          <button 
-            type="submit" 
-            className="w-full py-3.5 rounded-xl bg-[#59B292] text-black font-bold text-sm hover:opacity-90 active:scale-[0.99] transition-all duration-200 shadow-lg shadow-[#59B292]/20 flex items-center justify-center gap-2"
-          >
-            <ShieldCheck className="w-4 h-4" /> Unlock Studio
-          </button>
-        </form>
+          <form onSubmit={handleLogin} className="space-y-4">
+            
+            {/* EMAIL FIELD */}
+            <div className="space-y-1.5">
+              <label className={`text-[11px] font-mono uppercase tracking-wider font-semibold block ${isDarkMode ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                Administrator Email
+              </label>
+              <div className="relative flex items-center">
+                <span className="absolute left-3.5 text-neutral-400 pointer-events-none">
+                  <Mail className="w-4 h-4" />
+                </span>
+                <input 
+                  type="email"
+                  placeholder="admin@nik.dev"
+                  required
+                  value={emailInput}
+                  onChange={(e) => setEmailInput(e.target.value)}
+                  className={`w-full pl-10 pr-4 py-3 rounded-xl border text-sm font-mono outline-none transition-all duration-150 ${
+                    isDarkMode 
+                      ? 'bg-[#121216] border-neutral-800 text-white placeholder-neutral-700 focus:border-[#59B292] focus:ring-1 focus:ring-[#59B292]' 
+                      : 'bg-white border-neutral-200 text-neutral-900 placeholder-neutral-400 focus:border-[#59B292] focus:ring-1 focus:ring-[#59B292] shadow-sm'
+                  }`}
+                />
+              </div>
+            </div>
 
-        <div className="pt-2 text-center border-t border-gray-700/10">
+            {/* SECURITY PIN FIELD */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-[11px] font-mono">
+                <label className={`uppercase tracking-wider font-semibold ${isDarkMode ? 'text-neutral-400' : 'text-neutral-600'}`}>
+                  Security PIN
+                </label>
+                <span className="text-[#59B292] font-mono text-[10px]">Hint: 1234</span>
+              </div>
+
+              <div className="relative flex items-center">
+                <span className="absolute left-3.5 text-neutral-400 pointer-events-none">
+                  <Lock className="w-4 h-4" />
+                </span>
+                <input 
+                  type={showPin ? "text" : "password"}
+                  placeholder="••••"
+                  maxLength={10}
+                  autoFocus
+                  value={pinInput}
+                  onChange={(e) => setPinInput(e.target.value)}
+                  className={`w-full pl-10 pr-11 py-3 rounded-xl border text-sm font-mono tracking-widest outline-none transition-all duration-150 [&::-ms-reveal]:hidden [&::-ms-clear]:hidden ${
+                    pinError 
+                      ? 'border-red-500 bg-red-500/5' 
+                      : isDarkMode 
+                        ? 'bg-[#121216] border-neutral-800 text-white placeholder-neutral-700 focus:border-[#59B292] focus:ring-1 focus:ring-[#59B292]' 
+                        : 'bg-white border-neutral-200 text-neutral-900 placeholder-neutral-400 focus:border-[#59B292] focus:ring-1 focus:ring-[#59B292] shadow-sm'
+                  }`}
+                />
+
+                <button
+                  type="button"
+                  onClick={() => setShowPin(!showPin)}
+                  className="absolute right-3.5 text-neutral-400 hover:text-neutral-200 transition-colors p-1 outline-none"
+                  tabIndex={-1}
+                >
+                  {showPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+
+              {pinError && (
+                <p className="text-[11px] text-red-500 font-mono pt-1">
+                  [AUTH_ERROR] Incorrect PIN sequence.
+                </p>
+              )}
+            </div>
+
+            <button 
+              type="submit" 
+              className="w-full py-3 rounded-xl bg-[#59B292] text-neutral-950 font-bold text-xs uppercase tracking-wider font-mono hover:bg-[#4ea082] active:scale-[0.99] transition-all duration-150 flex items-center justify-center gap-2 outline-none shadow-sm"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Authenticate Session</span>
+            </button>
+          </form>
+        </div>
+
+        {/* Footer Navigation */}
+        <div className="w-full max-w-sm mx-auto text-center">
           <button 
+            type="button"
             onClick={() => router.push('/')} 
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 hover:text-[#59B292] transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-mono text-neutral-500 hover:text-[#59B292] transition-colors group"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> Return to Public Portfolio
+            <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" /> 
+            <span>Back to portfolio</span>
           </button>
         </div>
 
