@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { ExtendedProject, Skill, CVData, Testimonial } from '@/types';
 import { CheckCircle, Menu, X, Sun, Moon } from 'lucide-react';
@@ -12,6 +13,7 @@ import SkillsEditor from '@/components/admin/SkillsEditor';
 import TestimonialsEditor from '@/components/admin/TestimonialsEditor';
 
 export default function AdminStudio() {
+  const supabase = createClient();
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [pinInput, setPinInput] = useState<string>('');
@@ -23,11 +25,10 @@ export default function AdminStudio() {
   const [toast, setToast] = useState<string | null>(null);
 
   const [cvData, setCvData] = useState<CVData>({
-    fullName: "Alex Rivera",
-    title: "Frontend & Full-Stack Web Developer",
-    email: "alex.rivera@example.com",
-    phone: "+63 917 123 4567",
-    location: "Manila, Philippines",
+    fullName: "Dominic",
+    title: "Jr Website Developer",
+    email: "sgnickk@gmail.com",
+    phone: "+63 977 777 7777",
     summary: "Frontend-focused Engineer with 3+ years of hands-on experience building fast, accessible, and maintainable web applications.",
     experience: [],
     education: []
@@ -44,23 +45,40 @@ export default function AdminStudio() {
       setIsAuthenticated(true);
     }
 
+    async function fetchSupabaseProfile() {
+      const { data, error } = await supabase.from('profiles').select('*');
+
+      if (data && data.length > 0 && !error) {
+        const profile = data[0];
+        setCvData((prev) => ({
+          ...prev,
+          fullName: profile.full_name || prev.fullName,
+          title: profile.job_title || prev.title,
+          email: profile.email || prev.email,
+          phone: profile.phone || prev.phone,
+          summary: profile.bio || prev.summary,
+          githubUrl: profile.github_url,
+          linkedinUrl: profile.linkedin_url,
+        }));
+      }
+    }
+
+    fetchSupabaseProfile();
+
     const savedProj = localStorage.getItem('app_projects');
     const savedSkills = localStorage.getItem('app_skills');
-    const savedCV = localStorage.getItem('app_cv');
     const savedTestimonials = localStorage.getItem('app_testimonials');
 
     if (savedProj) setProjects(JSON.parse(savedProj));
     if (savedSkills) setSkills(JSON.parse(savedSkills));
-    if (savedCV) setCvData(JSON.parse(savedCV));
     if (savedTestimonials) setTestimonials(JSON.parse(savedTestimonials));
-  }, []);
+  }, [supabase]);
 
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
   };
 
-  // Persistent Dark/Light Mode
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const savedTheme = localStorage.getItem('portfolio_theme');
@@ -77,7 +95,6 @@ export default function AdminStudio() {
     }
   }, [isDarkMode]);
 
-  // Persistent Admin Sidebar Collapsed State
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('admin_sidebar_collapsed');
@@ -112,9 +129,58 @@ export default function AdminStudio() {
     router.push('/');
   };
 
-  const saveCVProfile = () => {
-    localStorage.setItem('app_cv', JSON.stringify(cvData));
-    showToast("Profile & CV updated successfully!");
+
+const saveCVProfile = async () => {
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('profiles')
+        .select('id')
+        .limit(1);
+
+      if (fetchError) throw fetchError;
+
+      const profileData = {
+        id: "11111111-1111-1111-1111-111111111111",
+        full_name: cvData.fullName,
+        job_title: cvData.title,
+        email: cvData.email,
+        phone: cvData.phone,
+        github_url: cvData.githubUrl,
+        linkedin_url: cvData.linkedinUrl,
+        bio: cvData.summary,
+        updated_at: new Date().toISOString(),
+      };
+
+      let error;
+
+      if (data && data.length > 0) {
+        const existingID = data[0].id;
+
+        const updateResult = await supabase
+          .from('profiles')
+          .update(profileData)
+          .eq('id', existingID);
+
+        error = updateResult.error;
+      } 
+
+      else {
+        const insertResult = await supabase
+          .from('profiles')
+          .insert([profileData]);
+
+        error = insertResult.error;
+      }
+
+      if (error) throw error;
+
+      localStorage.setItem('app_cv', JSON.stringify(cvData));
+      showToast("Profile & Socials saved successfully!");
+
+    } catch (err: any) {
+      console.error("Supabase Save Error:", err);
+      showToast("Error saving to Supabase: " + err.message);
+    }
   };
 
   if (!mounted) return null;
@@ -187,7 +253,7 @@ export default function AdminStudio() {
         </div>
       )}
 
-      {/* FLOATING SIDEBAR (Naka-fixed overlay sa ibabaw, hindi nito ginalaw ang main content width) */}
+      {/* FLOATING SIDEBAR */}
       <div className="hidden lg:block fixed left-4 top-4 z-40">
         <AdminSidebar
           sidebarCollapsed={sidebarCollapsed}
@@ -200,7 +266,7 @@ export default function AdminStudio() {
         />
       </div>
 
-      {/* MAIN CONTAINER: Full width at laging saktong nakagitna nang walang pakialam sa sidebar state */}
+      {/* MAIN CONTAINER */}
       <main className="min-h-screen overflow-y-auto p-4 sm:p-8 pt-20 lg:pt-8 pl-6 lg:pl-28 flex justify-center">
         <div className="w-full max-w-4xl space-y-12">
 

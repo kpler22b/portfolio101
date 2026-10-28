@@ -42,7 +42,6 @@ export interface CVData {
   title: string;
   email: string;
   phone: string;
-  location: string;
   summary: string;
   githubUrl?: string;
   linkedinUrl?: string;

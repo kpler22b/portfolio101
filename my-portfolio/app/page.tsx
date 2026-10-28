@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/utils/supabase/client'; // <-- Idinagdag ang Supabase client
 import { ExtendedProject, Skill, CVData, Testimonial } from '@/types';
 import { CheckCircle, Menu, X, Sun, Moon } from 'lucide-react';
 import PublicSidebar from '@/components/public/PublicSidebar';
@@ -61,24 +62,17 @@ const INITIAL_SKILLS: Skill[] = [
 ];
 
 const INITIAL_CV: CVData = {
-  fullName: "Alex Rivera",
-  title: "Frontend & Full-Stack Web Developer",
-  email: "alex.rivera@example.com",
-  phone: "+63 917 123 4567",
-  location: "Manila, Philippines",
-  summary: "Frontend-focused Engineer with 3+ years of hands-on experience building fast, accessible, and maintainable web applications. Passionate about clean architecture, responsive design systems, and measured performance optimization.",
+  fullName: "Dominic Saga",
+  title: "Jr Website Developer",
+  email: "sgnickk@gmail.com",
+  phone: "+63 991 302 8741",
+  summary: "Frontend-focused Engineer with hands-on experience building fast, accessible, and maintainable web applications.",
   experience: [
     {
       company: "TechCorp Global",
       role: "Frontend Web Developer",
       period: "2023 - Present",
-      details: "Spearheaded frontend performance optimizations across core web apps, reducing LCP by 40%. Engineered a reusable Tailwind CSS design system used by 8 cross-functional engineers."
-    },
-    {
-      company: "Digital Design Studio",
-      role: "Junior Web Developer",
-      period: "2021 - 2023",
-      details: "Shipped 15+ pixel-perfect, responsive client platforms from Figma wireframes. Integrated RESTful endpoints and optimized asset delivery pipelines to ensure sub-2s initial render times."
+      details: "Spearheaded frontend performance optimizations across core web apps."
     }
   ],
   education: [
@@ -91,6 +85,7 @@ const INITIAL_CV: CVData = {
 };
 
 export default function PublicPortfolio() {
+  const supabase = createClient(); // <-- Instance ng Supabase client
   const router = useRouter();
   const [mounted, setMounted] = useState<boolean>(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
@@ -102,7 +97,7 @@ export default function PublicPortfolio() {
   const [cvData, setCvData] = useState<CVData>(INITIAL_CV);
 
   const [testimonials, setTestimonials] = useState<Testimonial[]>([
-    { id: "t1", name: "Sarah Jenkins", role: "Product Lead at TechCorp", message: "Alex delivered clean, well-structured React code ahead of schedule. Great attention to detail, performance, and UI fidelity.", rating: 5, date: "2026-05-15" }
+    { id: "t1", name: "Sarah Jenkins", role: "Product Lead at TechCorp", message: "Alex delivered clean, well-structured React code ahead of schedule.", rating: 5, date: "2026-05-15" }
   ]);
   const [newName, setNewName] = useState('');
   const [newRole, setNewRole] = useState('');
@@ -144,18 +139,37 @@ export default function PublicPortfolio() {
     }
   }, [sidebarCollapsed]);
 
+  // Kunin ang data mula sa Supabase profiles table pagka-load
   useEffect(() => {
     setMounted(true);
+
+    async function fetchPublicProfile() {
+      const { data, error } = await supabase.from('profiles').select('*');
+      if (data && data.length > 0 && !error) {
+        const profile = data[0];
+        setCvData((prev) => ({
+          ...prev,
+          fullName: profile.full_name || prev.fullName,
+          title: profile.job_title || prev.title,
+          email: profile.email || prev.email,
+          phone: profile.phone || prev.phone,
+          summary: profile.bio || prev.summary,
+          githubUrl: profile.github_url || prev.githubUrl,
+          linkedinUrl: profile.linkedin_url || prev.linkedinUrl,
+        }));
+      }
+    }
+
+    fetchPublicProfile();
+
     const savedProj = localStorage.getItem('app_projects');
     const savedSkills = localStorage.getItem('app_skills');
-    const savedCV = localStorage.getItem('app_cv');
     const savedTestimonials = localStorage.getItem('app_testimonials');
 
     if (savedProj) setProjects(JSON.parse(savedProj));
     if (savedSkills) setSkills(JSON.parse(savedSkills));
-    if (savedCV) setCvData(JSON.parse(savedCV));
     if (savedTestimonials) setTestimonials(JSON.parse(savedTestimonials));
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     if (mounted) {
@@ -185,6 +199,15 @@ export default function PublicPortfolio() {
   const copyEmailToClipboard = () => {
     navigator.clipboard.writeText(cvData.email);
     showToast("Email address copied to clipboard!");
+  };
+
+  const copyGitHubToClipboard = () => {
+    if (cvData.githubUrl) {
+      navigator.clipboard.writeText(cvData.githubUrl);
+      showToast("GitHub URL copied to clipboard!");
+    } else {
+      showToast("No GitHub URL available.");
+    }
   };
 
   const handleAddTestimonial = (e: React.FormEvent) => {
@@ -231,13 +254,12 @@ export default function PublicPortfolio() {
               alt="Profile"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
-
             <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-[#59B292] border-2 border-white dark:border-[#121212]" />
           </div>
 
           <div className="flex flex-col">
-            <span className="font-bold text-xs tracking-tight">Dominic Saga</span>
-            <span className="text-[10px] text-gray-500 dark:text-gray-400">Website Developer</span>
+            <span className="font-bold text-xs tracking-tight">{cvData.fullName}</span>
+            <span className="text-[10px] text-gray-500 dark:text-gray-400">{cvData.title}</span>
           </div>
         </div>
 
@@ -270,7 +292,7 @@ export default function PublicPortfolio() {
         </div>
       )}
 
-      {/* FLOATING PUBLIC SIDEBAR (Naka-fixed overlay sa ibabaw, walang magagalaw sa sukat ng main content) */}
+      {/* FLOATING PUBLIC SIDEBAR */}
       <div className="hidden lg:block fixed left-4 top-4 z-40">
         <PublicSidebar
           sidebarCollapsed={sidebarCollapsed}
@@ -282,7 +304,7 @@ export default function PublicPortfolio() {
         />
       </div>
 
-      {/* MAIN CONTAINER: Full width at laging saktong nakagitna nang walang apektong width shifts */}
+      {/* MAIN CONTAINER */}
       <main className="min-h-screen overflow-y-auto p-4 sm:p-8 pt-20 lg:pt-8 pl-6 lg:pl-28 flex justify-center">
         <div className="w-full max-w-5xl space-y-16 sm:space-y-20">
 
