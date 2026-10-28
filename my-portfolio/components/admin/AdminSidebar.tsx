@@ -26,18 +26,18 @@ export default function AdminSidebar({
   onLogout
 }: AdminSidebarProps) {
   const adminNavItems = [
-    { id: 'profile', label: 'Profile Details', icon: User },
+    { id: 'profile', label: 'Overview', icon: User },
     { id: 'projects', label: 'Manage Projects', icon: FolderGit2 },
     { id: 'skills', label: 'Manage Skills', icon: Code2 },
-    { id: 'testimonials', label: 'Testimonials', icon: Quote },
+    { id: 'testimonials', label: 'Feedback', icon: Quote },
   ];
 
   const activeIndex = adminNavItems.findIndex((item) => item.id === activeTab);
 
   return (
     <aside className={`
-      hidden lg:flex fixed top-4 left-4 z-40 h-[calc(100vh-32px)] flex-col justify-between
-      p-4 rounded-3xl transition-all duration-300 ease-in-out select-none
+      hidden lg:flex sticky top-4 z-40 h-[calc(100vh-32px)] flex-col justify-between
+      p-4 rounded-3xl select-none shrink-0 ml-4 my-4
       backdrop-blur-2xl border shadow-2xl
       ${sidebarCollapsed ? 'w-20' : 'w-56'}
       ${isDarkMode 
@@ -61,7 +61,7 @@ export default function AdminSidebar({
         <div className="relative">
           {activeIndex !== -1 && (
             <div
-              className="absolute left-0 w-1 bg-[#59B292] rounded-r-full z-20 pointer-events-none will-change-transform transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] shadow-[0_0_12px_rgba(89,178,146,0.6)]"
+              className="absolute left-0 w-1 bg-[#59B292] rounded-r-full z-20 pointer-events-none transition-all duration-300"
               style={{
                 height: '40px',
                 transform: `translate3d(0, ${activeIndex * 44}px, 0)`,
@@ -80,7 +80,7 @@ export default function AdminSidebar({
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
                   className={`
-                    relative w-full flex items-center group transition-all duration-200 rounded-md text-xs font-medium outline-none h-10
+                    relative w-full flex items-center group transition-colors duration-150 rounded-md text-xs font-medium outline-none h-10
                     ${sidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-3 py-2.5'}
                     ${isActive 
                       ? isDarkMode 
@@ -122,7 +122,7 @@ export default function AdminSidebar({
         <button
           onClick={onLogout}
           className={`
-            w-full flex items-center group transition-all duration-150 rounded-md text-xs font-medium outline-none h-10
+            w-full flex items-center group transition-colors duration-150 rounded-md text-xs font-medium outline-none h-10
             ${sidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-3 py-2.5'}
             ${isDarkMode 
               ? 'text-red-400 hover:bg-red-500/10' 
@@ -149,7 +149,7 @@ export default function AdminSidebar({
             onClick={() => setIsDarkMode(!isDarkMode)}
             aria-label="Toggle Theme"
             className={`
-              p-2.5 rounded-md transition-all duration-150 flex items-center justify-center group relative outline-none
+              p-2.5 rounded-md transition-colors duration-150 flex items-center justify-center group relative outline-none
               ${sidebarCollapsed ? 'w-full' : 'flex-1'}
               ${isDarkMode 
                 ? 'bg-white/5 text-amber-400 hover:bg-white/10 border border-white/5' 
@@ -174,12 +174,12 @@ export default function AdminSidebar({
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
             aria-label={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
             className={`
-              p-2.5 rounded-md transition-all duration-150 flex items-center justify-center group relative outline-none
+              p-2.5 rounded-md transition-colors duration-150 flex items-center justify-center group relative outline-none
               ${sidebarCollapsed ? 'w-full' : 'flex-1'}
               ${isDarkMode 
                 ? 'bg-white/5 text-neutral-400 hover:text-neutral-200 hover:bg-white/10 border border-white/5' 
                 : 'bg-black/5 text-neutral-600 hover:text-neutral-900 hover:bg-black/10 border border-black/5'}
-          `}
+            `}
           >
             {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
 

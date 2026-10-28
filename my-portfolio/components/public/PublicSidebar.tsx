@@ -24,12 +24,12 @@ export default function PublicSidebar({
   setIsDarkMode
 }: PublicSidebarProps) {
   const navItems = [
-    { id: 'about', label: 'About', icon: User },
+    { id: 'about', label: 'Overview', icon: User },
     { id: 'projects', label: 'Projects', icon: FolderGit2 },
-    { id: 'skills', label: 'Skills', icon: Code2 },
-    { id: 'cv', label: 'CV Inspector', icon: FileText },
-    { id: 'testimonials', label: 'Testimonials', icon: Quote },
-    { id: 'contact', label: 'Contact', icon: Mail },
+    { id: 'skills', label: 'Tech Stack', icon: Code2 },
+    { id: 'cv', label: 'Interactive Resume', icon: FileText },
+    { id: 'testimonials', label: 'Feedback', icon: Quote },
+    { id: 'contact', label: 'Connect', icon: Mail },
   ];
 
   const activeIndex = navItems.findIndex((item) => item.id === activeTab);

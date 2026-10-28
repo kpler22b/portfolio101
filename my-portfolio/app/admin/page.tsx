@@ -10,8 +10,6 @@ import ProfileEditor from '@/components/admin/ProfileEditor';
 import ProjectsEditor from '@/components/admin/ProjectsEditor';
 import SkillsEditor from '@/components/admin/SkillsEditor';
 import TestimonialsEditor from '@/components/admin/TestimonialsEditor';
-// Idagdag o i-adjust ang import na ito kung may hiwalay kang CV/Experience editor component:
-// import CVEditor from '@/components/admin/CVEditor';
 
 export default function AdminStudio() {
   const router = useRouter();
@@ -135,7 +133,7 @@ export default function AdminStudio() {
   }
 
   return (
-    <div className={`flex min-h-screen transition-colors duration-400 ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
+    <div className={`min-h-screen relative transition-colors duration-400 ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
       {toast && (
         <div className="fixed top-5 right-5 z-50 bg-[#59B292] text-black font-semibold px-4 py-2.5 rounded-lg shadow-xl flex items-center gap-2 text-sm max-w-[90vw]">
           <CheckCircle className="w-5 h-5 shrink-0" />
@@ -189,20 +187,22 @@ export default function AdminStudio() {
         </div>
       )}
 
-      {/* ADMIN SIDEBAR */}
-      <AdminSidebar
-        sidebarCollapsed={sidebarCollapsed}
-        setSidebarCollapsed={setSidebarCollapsed}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        isDarkMode={isDarkMode}
-        setIsDarkMode={setIsDarkMode}
-        onLogout={handleLogout}
-      />
+      {/* FLOATING SIDEBAR (Naka-fixed overlay sa ibabaw, hindi nito ginalaw ang main content width) */}
+      <div className="hidden lg:block fixed left-4 top-4 z-40">
+        <AdminSidebar
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          isDarkMode={isDarkMode}
+          setIsDarkMode={setIsDarkMode}
+          onLogout={handleLogout}
+        />
+      </div>
 
-      {/* Dito inayos ang margin para sumabay sa collapse state at nananatili sa gitna ang content */}
-      <main className={`flex-1 overflow-y-auto p-4 sm:p-8 pt-20 lg:pt-8 transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
-        <div className="max-w-4xl mx-auto space-y-12">
+      {/* MAIN CONTAINER: Full width at laging saktong nakagitna nang walang pakialam sa sidebar state */}
+      <main className="min-h-screen overflow-y-auto p-4 sm:p-8 pt-20 lg:pt-8 pl-6 lg:pl-28 flex justify-center">
+        <div className="w-full max-w-4xl space-y-12">
 
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 border-b pb-4 border-[#222222]/30">
             <div>

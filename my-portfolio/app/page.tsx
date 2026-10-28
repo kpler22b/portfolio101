@@ -214,7 +214,7 @@ export default function PublicPortfolio() {
   if (!mounted) return null;
 
   return (
-    <div className={`flex min-h-screen transition-colors duration-400 ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
+    <div className={`min-h-screen relative transition-colors duration-400 ${isDarkMode ? 'bg-black text-white' : 'bg-white text-black'}`}>
       {toast && (
         <div className="fixed top-5 right-5 z-50 bg-[#59B292] text-black font-semibold px-4 py-2.5 rounded-lg shadow-xl flex items-center gap-2 text-sm max-w-[90vw]">
           <CheckCircle className="w-5 h-5 shrink-0" />
@@ -270,18 +270,21 @@ export default function PublicPortfolio() {
         </div>
       )}
 
-      <PublicSidebar
-        sidebarCollapsed={sidebarCollapsed}
-        setSidebarCollapsed={setSidebarCollapsed}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        isDarkMode={isDarkMode}
-        setIsDarkMode={setIsDarkMode}
-      />
+      {/* FLOATING PUBLIC SIDEBAR (Naka-fixed overlay sa ibabaw, walang magagalaw sa sukat ng main content) */}
+      <div className="hidden lg:block fixed left-4 top-4 z-40">
+        <PublicSidebar
+          sidebarCollapsed={sidebarCollapsed}
+          setSidebarCollapsed={setSidebarCollapsed}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          isDarkMode={isDarkMode}
+          setIsDarkMode={setIsDarkMode}
+        />
+      </div>
 
-      {/* Dito inayos ang margin para sumabay kung nakakonek o naka-collapse ang sidebar */}
-      <main className={`flex-1 transition-all duration-300 p-4 sm:p-8 pt-20 lg:pt-8 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'}`}>
-        <div className="max-w-5xl mx-auto space-y-16 sm:space-y-20">
+      {/* MAIN CONTAINER: Full width at laging saktong nakagitna nang walang apektong width shifts */}
+      <main className="min-h-screen overflow-y-auto p-4 sm:p-8 pt-20 lg:pt-8 pl-6 lg:pl-28 flex justify-center">
+        <div className="w-full max-w-5xl space-y-16 sm:space-y-20">
 
           <HeroSection
             cvData={cvData}
@@ -335,7 +338,7 @@ export default function PublicPortfolio() {
               }}
               title="Triple-click here to access Admin Studio"
             >
-              © {currentYear} {cvData.fullName}. All rights reserved. (Triple-click for Admin)
+              © {currentYear} {cvData.fullName}. All rights reserved.
             </p>
           </footer>
 
