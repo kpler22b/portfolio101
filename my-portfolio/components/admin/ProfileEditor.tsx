@@ -1,29 +1,79 @@
 'use client';
 
-import React, { useState } from 'react';
-import { User, Save, Plus, Trash2 } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, Save, Plus, Trash2, Edit, SaveIcon } from 'lucide-react';
 import { CVData, Experience, Education } from '@/types';
+import { getProfileFromDB, saveProfileToDB } from '@/services/profileServices/personalInfo';
+import { saveExperienceToDB, getExperienceFromDB, deleteExperienceFromDB, updateExperienceFromDB } from '@/services/profileServices/experience'
+import { details } from 'framer-motion/client';
 
 interface ProfileEditorProps {
   cvData: CVData;
   setCvData: React.Dispatch<React.SetStateAction<CVData>>;
-  onSave: () => void;
+  showToast: (msg: string) => void;
   isDarkMode: boolean;
 }
 
-export default function ProfileEditor({ cvData, setCvData, onSave, isDarkMode }: ProfileEditorProps) {
-  // Temporary state for new experience form
+export default function ProfileEditor({ cvData, setCvData, showToast, isDarkMode }: ProfileEditorProps) {
   const [newRole, setNewRole] = useState('');
   const [newCompany, setNewCompany] = useState('');
   const [newPeriod, setNewPeriod] = useState('');
   const [newDetails, setNewDetails] = useState('');
+  const [experienceID, setexperienceID] = useState<string | null>(null)
 
   // Temporary state for new education form
   const [newDegree, setNewDegree] = useState('');
   const [newSchool, setNewSchool] = useState('');
   const [newEduPeriod, setNewEduPeriod] = useState('');
 
-  const handleAddExperience = (e: React.FormEvent) => {
+  // Auto-fetch profile data on mount using the service layer
+  useEffect(() => {
+    async function loadData() {
+      try {
+
+        const profile = await getProfileFromDB();
+        if (profile) {
+          setCvData((prev) => ({
+            ...prev,
+            fullName: profile.full_name || prev.fullName,
+            title: profile.job_title || prev.title,
+            email: profile.email || prev.email,
+            phone: profile.phone || prev.phone,
+            summary: profile.bio || prev.summary,
+            githubUrl: profile.github_url,
+            linkedinUrl: profile.linkedin_url,
+          }));
+        }
+
+        const dbexperience = await getExperienceFromDB()
+        if (dbexperience) {
+          setCvData((prev) => ({
+            ...prev,
+            experience: dbexperience
+          }));
+        }
+
+      } catch (err: any) {
+        console.error("Error fetching profile:", err.message);
+      }
+    }
+
+    loadData();
+  }, [setCvData]);
+
+  // Handle saving profile changes to Supabase
+  const handleSaveProfile = async () => {
+    try {
+      await saveProfileToDB(cvData);
+      localStorage.setItem('app_cv', JSON.stringify(cvData));
+      showToast("Profile & Socials saved successfully!");
+    } catch (err: any) {
+      console.error("Supabase Save Error:", err);
+      showToast("Error saving to Supabase: " + err.message);
+    }
+  };
+
+  const handleAddExperience = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newRole.trim() || !newCompany.trim()) return;
 
@@ -34,21 +84,92 @@ export default function ProfileEditor({ cvData, setCvData, onSave, isDarkMode }:
       details: newDetails
     };
 
-    setCvData({
-      ...cvData,
-      experience: [newExp, ...cvData.experience]
-    });
+    try {
+      await saveExperienceToDB(newExp)
 
-    setNewRole('');
-    setNewCompany('');
-    setNewPeriod('');
-    setNewDetails('');
+      const updatedList = await getExperienceFromDB();
+      setCvData({
+        ...cvData,
+        experience: updatedList || [newExp, ...cvData.experience]
+      });
+
+      setNewRole('');
+      setNewCompany('');
+      setNewPeriod('');
+      setNewDetails('');
+      showToast("Experience saved successfully")
+    } catch (error) {
+      console.error(`Error saving experience: ${error}`)
+      showToast(`Error saving experience: ${error}`)
+    }
   };
 
-  const handleDeleteExperience = (index: number) => {
-    const updatedExp = cvData.experience.filter((_, i) => i !== index);
-    setCvData({ ...cvData, experience: updatedExp });
-  };
+  const handleDeleteExperience = async (id?: string) => {
+    if (!id) return
+    try {
+      await deleteExperienceFromDB(id)
+
+      const updatedExperience = cvData.experience.filter((exp) => exp.id !== id)
+
+      setCvData({ ...cvData, experience: updatedExperience })
+      showToast("Experience deleted successfully")
+    } catch (error: any) {
+      console.error(`Error deleting experience: ${error}`)
+      showToast(`Error deleting experience: ${error}`)
+    }
+  }
+
+  const handleEdit = (exp: Experience) => {
+    if (!exp.id) return
+    setexperienceID(exp.id)
+    setNewRole(exp.role)
+    setNewCompany(exp.company)
+    setNewPeriod(exp.period)
+    setNewDetails(exp.details)
+  }
+
+  const handleUpdateExperience = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if(!experienceID) return
+    try {
+      const updatedData = {
+        role: newRole,
+        company: newCompany,
+        period: newPeriod,
+        details: newDetails,
+      }
+
+      await updateExperienceFromDB(updatedData, experienceID)
+      const dbexperience = await getExperienceFromDB();
+      if (dbexperience) {
+
+        setCvData((prev) => ({
+          ...prev,
+          experience: dbexperience,
+        }));
+
+      }
+
+        setexperienceID('')
+    setNewRole('')
+    setNewCompany('')
+    setNewPeriod('')
+    setNewDetails('')
+    showToast("Experience Successfully Updated")
+
+    } catch (error: any) {
+      console.error('Error updating experience:', error)
+      showToast(`Error updating experience: ${error}`)
+    }
+  }
+
+  const handleCancelEdit = () => {
+    setexperienceID('')
+    setNewRole('')
+    setNewCompany('')
+    setNewPeriod('')
+    setNewDetails('')
+  }
 
   const handleAddEducation = (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,7 +237,7 @@ export default function ProfileEditor({ cvData, setCvData, onSave, isDarkMode }:
           <textarea rows={4} value={cvData.summary} onChange={(e) => setCvData({ ...cvData, summary: e.target.value })} className={`w-full px-4 py-2 rounded-xl border text-sm outline-none ${isDarkMode ? 'bg-black border-[#222222] text-white' : 'bg-white border-gray-300 text-black'}`} />
         </div>
 
-        <button onClick={onSave} className="px-6 py-2.5 rounded-xl bg-[#59B292] text-black font-bold text-xs flex items-center gap-2 hover:opacity-90 transition shadow-lg shadow-[#59B292]/10">
+        <button onClick={handleSaveProfile} className="px-6 py-2.5 rounded-xl bg-[#59B292] text-black font-bold text-xs flex items-center gap-2 hover:opacity-90 transition shadow-lg shadow-[#59B292]/10">
           <Save className="w-4 h-4" /> Save Profile Changes
         </button>
       </div>
@@ -134,9 +255,20 @@ export default function ProfileEditor({ cvData, setCvData, onSave, isDarkMode }:
             <input type="text" placeholder="Period (e.g. 2023 - Present)" value={newPeriod} onChange={(e) => setNewPeriod(e.target.value)} className={`w-full px-3 py-2 rounded-lg border text-xs outline-none ${isDarkMode ? 'bg-black border-[#222222] text-white' : 'bg-white border-gray-300 text-black'}`} />
           </div>
           <textarea rows={2} placeholder="Key achievements / details" value={newDetails} onChange={(e) => setNewDetails(e.target.value)} className={`w-full px-3 py-2 rounded-lg border text-xs outline-none ${isDarkMode ? 'bg-black border-[#222222] text-white' : 'bg-white border-gray-300 text-black'}`} />
-          <button onClick={handleAddExperience} className="px-4 py-2 rounded-lg bg-[#59B292] text-black font-bold text-xs flex items-center gap-1.5 hover:opacity-90 transition">
-            <Plus className="w-3.5 h-3.5" /> Add Experience
-          </button>
+          {!experienceID ? (
+            <button onClick={handleAddExperience} className="px-4 py-2 rounded-lg bg-[#59B292] text-black font-bold text-xs flex items-center gap-1.5 hover:opacity-90 transition">
+              <Plus className="w-3.5 h-3.5" /> Add Experience
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button onClick={handleUpdateExperience} className="px-4 py-2 rounded-lg bg-[#59B292] text-black font-bold text-xs flex items-center gap-1.5 hover:opacity-90 transition">
+                <SaveIcon className="w-3.5 h-3.5" /> Update
+              </button>
+              <button onClick={handleCancelEdit} className="px-4 py-2 rounded-lg bg-gray-600 text-white font-bold text-xs hover:opacity-90 transition">
+                Cancel
+              </button>
+            </div>
+          )}
         </div>
 
         {/* List of Experiences */}
@@ -148,9 +280,14 @@ export default function ProfileEditor({ cvData, setCvData, onSave, isDarkMode }:
                 <span className="text-xs text-gray-400 font-mono">{exp.period}</span>
                 <p className="text-xs mt-1 text-gray-300">{exp.details}</p>
               </div>
-              <button onClick={() => handleDeleteExperience(index)} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition shrink-0">
-                <Trash2 className="w-4 h-4" />
-              </button>
+              <div className='flex flex-row'>
+                <button onClick={() => handleDeleteExperience(exp.id)} className="p-2 text-red-500 hover:bg-red-500/10 rounded-lg transition shrink-0">
+                  <Trash2 className="w-4 h-4" />
+                </button>
+                <button onClick={() => handleEdit(exp)} className="p-2 text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition shrink-0">
+                  <Edit className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           ))}
         </div>

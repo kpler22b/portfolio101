@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { ExtendedProject, Skill, CVData, Testimonial } from '@/types';
 import { CheckCircle, Menu, X, Sun, Moon } from 'lucide-react';
@@ -11,9 +10,9 @@ import ProfileEditor from '@/components/admin/ProfileEditor';
 import ProjectsEditor from '@/components/admin/ProjectsEditor';
 import SkillsEditor from '@/components/admin/SkillsEditor';
 import TestimonialsEditor from '@/components/admin/TestimonialsEditor';
+import Link from 'next/link';
 
 export default function AdminStudio() {
-  const supabase = createClient();
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [pinInput, setPinInput] = useState<string>('');
@@ -45,26 +44,6 @@ export default function AdminStudio() {
       setIsAuthenticated(true);
     }
 
-    async function fetchSupabaseProfile() {
-      const { data, error } = await supabase.from('profiles').select('*');
-
-      if (data && data.length > 0 && !error) {
-        const profile = data[0];
-        setCvData((prev) => ({
-          ...prev,
-          fullName: profile.full_name || prev.fullName,
-          title: profile.job_title || prev.title,
-          email: profile.email || prev.email,
-          phone: profile.phone || prev.phone,
-          summary: profile.bio || prev.summary,
-          githubUrl: profile.github_url,
-          linkedinUrl: profile.linkedin_url,
-        }));
-      }
-    }
-
-    fetchSupabaseProfile();
-
     const savedProj = localStorage.getItem('app_projects');
     const savedSkills = localStorage.getItem('app_skills');
     const savedTestimonials = localStorage.getItem('app_testimonials');
@@ -72,7 +51,7 @@ export default function AdminStudio() {
     if (savedProj) setProjects(JSON.parse(savedProj));
     if (savedSkills) setSkills(JSON.parse(savedSkills));
     if (savedTestimonials) setTestimonials(JSON.parse(savedTestimonials));
-  }, [supabase]);
+  }, []);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -127,60 +106,6 @@ export default function AdminStudio() {
     setIsAuthenticated(false);
     sessionStorage.removeItem('admin_authenticated');
     router.push('/');
-  };
-
-
-const saveCVProfile = async () => {
-    try {
-      const { data, error: fetchError } = await supabase
-        .from('profiles')
-        .select('id')
-        .limit(1);
-
-      if (fetchError) throw fetchError;
-
-      const profileData = {
-        id: "11111111-1111-1111-1111-111111111111",
-        full_name: cvData.fullName,
-        job_title: cvData.title,
-        email: cvData.email,
-        phone: cvData.phone,
-        github_url: cvData.githubUrl,
-        linkedin_url: cvData.linkedinUrl,
-        bio: cvData.summary,
-        updated_at: new Date().toISOString(),
-      };
-
-      let error;
-
-      if (data && data.length > 0) {
-        const existingID = data[0].id;
-
-        const updateResult = await supabase
-          .from('profiles')
-          .update(profileData)
-          .eq('id', existingID);
-
-        error = updateResult.error;
-      } 
-
-      else {
-        const insertResult = await supabase
-          .from('profiles')
-          .insert([profileData]);
-
-        error = insertResult.error;
-      }
-
-      if (error) throw error;
-
-      localStorage.setItem('app_cv', JSON.stringify(cvData));
-      showToast("Profile & Socials saved successfully!");
-
-    } catch (err: any) {
-      console.error("Supabase Save Error:", err);
-      showToast("Error saving to Supabase: " + err.message);
-    }
   };
 
   if (!mounted) return null;
@@ -275,19 +200,19 @@ const saveCVProfile = async () => {
               <h1 className="text-2xl sm:text-3xl font-bold">Admin Content Studio</h1>
               <p className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Manage and upload information live to your public portfolio.</p>
             </div>
-            <button
-              onClick={() => router.push('/')}
-              className="w-full sm:w-auto justify-center px-4 py-2.5 rounded-xl bg-[#59B292] text-black font-bold text-xs flex items-center gap-2 hover:opacity-90 transition shrink-0 shadow-lg shadow-[#59B292]/10"
-            >
-              View Live Website
-            </button>
+           <Link
+  href="/"
+  className="w-full sm:w-auto justify-center px-4 py-2.5 rounded-xl bg-[#59B292] text-black font-bold text-xs flex items-center gap-2 hover:opacity-90 transition shrink-0 shadow-lg shadow-[#59B292]/10"
+>
+  View Live Website
+</Link>
           </div>
 
           {activeTab === 'profile' && (
             <ProfileEditor
               cvData={cvData}
               setCvData={setCvData}
-              onSave={saveCVProfile}
+              showToast={showToast}
               isDarkMode={isDarkMode}
             />
           )}
